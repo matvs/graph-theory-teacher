@@ -10,6 +10,7 @@ window.addEventListener('load', (event) => {
         nodes: [],
         animationFrameId: null,
         currentNode: null,
+        isMouseDown: false,
     
         init: function (options = {}) {
             this.onMouseDown = this.onMouseDown.bind(this);
@@ -85,6 +86,7 @@ window.addEventListener('load', (event) => {
             var y = event.y;
             x -= this.canvas.offsetLeft;
             y -= this.canvas.offsetTop;
+            this.isMouseDown = true;
 
             const node = this.getNodeAt(x, y);
             if (node) {
@@ -128,16 +130,20 @@ window.addEventListener('load', (event) => {
             var y = event.y;
             x -= this.canvas.offsetLeft;
             y -= this.canvas.offsetTop;
+     
+            if (this.isMouseDown && Node.selectedNodeId) {
+                const node = this.nodes.find(n => n.id === Node.selectedNodeId);
+                node.x = x;
+                node.y = y;
+            }
          
         },
     
         onMouseUp: function (event) {
             event.preventDefault();
+            this.isMouseDown = false;
            
-            if (this.currentKlocek) {
-                this.currentKlocek.selected = false;
-                this.currentKlocek = null;
-            }
+            // Node.selectedNodeId = null;
         }
     }.init();
 });
