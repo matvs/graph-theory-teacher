@@ -4,8 +4,8 @@ window.addEventListener('load', (event) => {
             canvasId: 'canvas',
             graphTypeRadioButtonIds: ['undirectedRadio', 'directedRadio']
         },
-    
-    
+
+
         ctx: null,
         canvas: null,
         nodes: [],
@@ -14,7 +14,7 @@ window.addEventListener('load', (event) => {
         isMouseDown: false,
         currentType: 'directed',
         actionsManager: null,
-    
+
         init: function (options = {}) {
             this.onMouseDown = this.onMouseDown.bind(this);
             this.onMouseMove = this.onMouseMove.bind(this);
@@ -23,7 +23,7 @@ window.addEventListener('load', (event) => {
             this.changeGraphType = this.changeGraphType.bind(this);
 
             options = Object.assign(this.defaultOptions, options);
-    
+
             this.canvas = document.getElementById(options.canvasId);
             this.ctx = this.canvas.getContext('2d');
 
@@ -34,26 +34,26 @@ window.addEventListener('load', (event) => {
             options.graphTypeRadioButtonIds.forEach(id => {
                 document.getElementById(id).addEventListener('change', this.changeGraphType);
             })
-           
+
             this.start();
             return this;
         },
-    
+
         start: function () {
             this.nodes = [];
             this.actionsManager = new ActionsManager(this.nodes);
             cancelAnimationFrame(this.animationFrameId);
             this.animationFrameId = requestAnimationFrame(this.draw);
-           
+
         },
 
         getNodeAt(x, y) {
             return this.nodes.find(node => {
-               return Math.pow((x - node.x),2) + Math.pow(y - node.y, 2) <= Math.pow(2*Node.radius, 2);
+                return Math.pow((x - node.x), 2) + Math.pow(y - node.y, 2) <= Math.pow(2 * Node.radius, 2);
             })
         },
-    
-        draw: function() {
+
+        draw: function () {
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
             for (const node of this.nodes) {
                 // node.x = getRandomArbitrary(0, this.canvas.width);
@@ -71,37 +71,26 @@ window.addEventListener('load', (event) => {
         },
 
         async dfs() {
-            const startNode = this.nodes.find(n => n.id === Node.selectedNodeId);
-            this.nodes.forEach(n => n.visited = false);
-            if (startNode) {
-                const stack = new Stack();
-                stack.add(startNode);
-                while(!stack.isEmpty()) {
-                    await sleep(1000);
-                    const node = stack.get();
-                    node.visited = true;
-                    for (const child of node.adjacentNodes) {
-                        if (!child.visited) {
-                            stack.add(child)
-                        }
-                    }
-                }
-            }
+            await this.traverseGraph('dfs');
         },
 
         async bfs() {
+            await this.traverseGraph('bfs');
+        },
+
+        async traverseGraph(type = 'bfs') {
             const startNode = this.nodes.find(n => n.id === Node.selectedNodeId);
             this.nodes.forEach(n => n.visited = false);
             if (startNode) {
-                const queue = new Queue();
-                queue.add(startNode);
-                while(!queue.isEmpty()) {
-                    await sleep(1000);
-                    const node = queue.get();
+                const container = type === 'bfs' ? new Queue() : new Stack();
+                container.add(startNode);
+                while (!container.isEmpty()) {
+                    await sleep(750);
+                    const node = container.get();
                     node.visited = true;
                     for (const child of node.adjacentNodes) {
                         if (!child.visited) {
-                            queue.add(child)
+                            container.add(child)
                         }
                     }
                 }
@@ -112,15 +101,15 @@ window.addEventListener('load', (event) => {
             this.actionsManager.undo();
         },
 
-        changeGraphType({target}) {
+        changeGraphType({ target }) {
             // Actually it seems like according to spec if change event is fired
             // for radio button it means it is checked indeed 
             // TODO: read it up and make sure it is the case
-            if(target && target.checked) {
+            if (target && target.checked) {
                 this.currentType = target.value;
             }
         },
-    
+
         onMouseDown: function (event) {
             event.preventDefault();
             var x = event.x;
@@ -128,7 +117,7 @@ window.addEventListener('load', (event) => {
             x -= this.canvas.offsetLeft;
             y -= this.canvas.offsetTop;
             this.isMouseDown = true;
-            this.originalPos = {x,y};
+            this.originalPos = { x, y };
 
             const node = this.getNodeAt(x, y);
             if (node) {
@@ -155,7 +144,7 @@ window.addEventListener('load', (event) => {
                 } else {
                     Node.selectedNodeId = node.id == Node.selectedNodeId ? null : node.id;
                 }
-          
+
             } else {
                 const newNode = new Node(x, y)
                 this.actionsManager.add({
@@ -175,28 +164,28 @@ window.addEventListener('load', (event) => {
                 } else {
                     // Node.selectedNodeId = newNode.id;
                 }
-         
+
                 this.nodes.push(newNode);
             }
-          
-          
+
+
         },
-    
+
         onMouseMove: function (event) {
             event.preventDefault();
             var x = event.x;
             var y = event.y;
             x -= this.canvas.offsetLeft;
             y -= this.canvas.offsetTop;
-     
+
             if (this.isMouseDown && Node.selectedNodeId !== null) {
                 const node = this.nodes.find(n => n.id === Node.selectedNodeId);
                 node.x = x;
                 node.y = y;
             }
-         
+
         },
-    
+
         onMouseUp: function (event) {
             event.preventDefault();
             this.isMouseDown = false;
@@ -209,7 +198,7 @@ window.addEventListener('load', (event) => {
                     node: node,
                 })
             }
-           
+
             // Node.selectedNodeId = null;
         }
     }.init();
@@ -228,7 +217,7 @@ class Node {
 
     adjacentNodes = [];
     visited = false;
-    constructor(x ,y ) {
+    constructor(x, y) {
         this.x = x;
         this.y = y;
         this.id = Node.id++;
@@ -236,7 +225,7 @@ class Node {
 
     draw(ctx) {
         ctx.save();
-        ctx.fillStyle =  this.id == Node.selectedNodeId ? '#851e3e' : '#005b96';
+        ctx.fillStyle = this.id == Node.selectedNodeId ? '#851e3e' : '#005b96';
         if (this.visited) {
             ctx.fillStyle = '#7bc043';
         }
@@ -246,7 +235,7 @@ class Node {
         ctx.restore();
 
         this.drawEdges(ctx);
-    } 
+    }
 
     drawEdges(ctx) {
         ctx.save();
@@ -262,16 +251,16 @@ class Node {
             ctx.lineWidth = 2.5;
             ctx.beginPath();
             ctx.moveTo(this.x, this.y);
-            const x = child.x - Node.radius*Math.cos(alpha);
-            const y = child.y +  Node.radius*Math.sin(alpha);
+            const x = child.x - Node.radius * Math.cos(alpha);
+            const y = child.y + Node.radius * Math.sin(alpha);
             ctx.lineTo(x, y);
-            
-            const arrowLength = 20;
-            ctx.moveTo(x,y);
-            ctx.lineTo(x - arrowLength*Math.cos(betha), y - arrowLength*Math.sin(betha));
 
-            ctx.moveTo(x,y);
-            ctx.lineTo(x + arrowLength*Math.cos(betha), y - arrowLength*Math.sin(betha));
+            const arrowLength = 20;
+            ctx.moveTo(x, y);
+            ctx.lineTo(x - arrowLength * Math.cos(betha), y - arrowLength * Math.sin(betha));
+
+            ctx.moveTo(x, y);
+            ctx.lineTo(x + arrowLength * Math.cos(betha), y - arrowLength * Math.sin(betha));
 
             ctx.stroke();
         }
@@ -296,9 +285,9 @@ class ActionsManager {
     actions = [];
     undoneActions = [];
 
-    
+
     constructor(nodes) {
-      this.nodes = nodes;
+        this.nodes = nodes;
     }
 
     add(action) {
@@ -317,11 +306,11 @@ class ActionsManager {
                 case ActionType.addNode: {
                     const node = lastAction.node;
                     const index = this.nodes.findIndex($node => $node.id == node.id);
-                    this.nodes.map($node => 
+                    this.nodes.map($node =>
                         ({ adjacentNodes: $node.adjacentNodes, index: $node.adjacentNodes.findIndex(child => child.id == node.id) })).filter(item => {
                             return item.index > -1
                         }).forEach(item => item.adjacentNodes.splice(item.index, 1));
-                    if(index > -1) {
+                    if (index > -1) {
                         if (node.id == Node.selectedNodeId) {
                             Node.selectedNodeId = null;
                         }
@@ -330,7 +319,7 @@ class ActionsManager {
                     break;
                 }
                 case ActionType.addEdge: {
-                    const {from, to, graphType} = lastAction;
+                    const { from, to, graphType } = lastAction;
                     let index = from.adjacentNodes.findIndex($node => $node.id == to.id);
                     from.adjacentNodes.splice(index, 1);
                     if (graphType == GraphType.undirected) {
@@ -340,7 +329,7 @@ class ActionsManager {
                     break
                 }
                 case ActionType.moved: {
-                    const {x, y, node} = lastAction;
+                    const { x, y, node } = lastAction;
                     node.x = x;
                     node.y = y;
                     break;
@@ -353,11 +342,11 @@ class ActionsManager {
 
 function getRandomArbitrary(min, max) {
     return Math.random() * (max - min) + min;
-  }
+}
 
-  function sleep(ms) {
+function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
-  }
+}
 
 class AbstractContainer {
     items = [];
@@ -370,9 +359,9 @@ class AbstractContainer {
     }
 }
 class Queue extends AbstractContainer {
-   constructor() {
-       super()
-   }
+    constructor() {
+        super()
+    }
     get() {
         return this.items.shift();
     }
