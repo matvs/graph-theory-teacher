@@ -74,23 +74,38 @@ window.addEventListener('load', (event) => {
             const startNode = this.nodes.find(n => n.id === Node.selectedNodeId);
             this.nodes.forEach(n => n.visited = false);
             if (startNode) {
-                const dfsR = async (node) => {
+                const stack = new Stack();
+                stack.add(startNode);
+                while(!stack.isEmpty()) {
                     await sleep(1000);
+                    const node = stack.get();
                     node.visited = true;
                     for (const child of node.adjacentNodes) {
                         if (!child.visited) {
-                            await dfsR(child);
+                            stack.add(child)
                         }
                     }
-                    return
                 }
-
-                dfsR(startNode);
             }
         },
 
-        bfs() {
-
+        async bfs() {
+            const startNode = this.nodes.find(n => n.id === Node.selectedNodeId);
+            this.nodes.forEach(n => n.visited = false);
+            if (startNode) {
+                const queue = new Queue();
+                queue.add(startNode);
+                while(!queue.isEmpty()) {
+                    await sleep(1000);
+                    const node = queue.get();
+                    node.visited = true;
+                    for (const child of node.adjacentNodes) {
+                        if (!child.visited) {
+                            queue.add(child)
+                        }
+                    }
+                }
+            }
         },
 
         undo() {
@@ -343,3 +358,32 @@ function getRandomArbitrary(min, max) {
   function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
+
+class AbstractContainer {
+    items = [];
+    add(item) {
+        this.items.push(item);
+    }
+
+    isEmpty() {
+        return this.items.length === 0;
+    }
+}
+class Queue extends AbstractContainer {
+   constructor() {
+       super()
+   }
+    get() {
+        return this.items.shift();
+    }
+}
+
+class Stack extends AbstractContainer {
+    constructor() {
+        super()
+    }
+    get() {
+        return this.items.pop();
+    }
+}
+
