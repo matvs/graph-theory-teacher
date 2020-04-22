@@ -2,11 +2,22 @@
 <head>
 <title>Graph Theory teacher</title>
 <script src="js/index.js"></script>
+<link href="./style.css" rel="stylesheet" />
 </head>
 <body>
-<canvas id="canvas" width="800" height="600"  style="border:1px solid black; float:left; margin-right:10px">
+<canvas id="canvas" width="800" height="600">
 Your browser does not support canvas. 
 </canvas>
-<button onclick="Teacher.dfs()">DFS</button>
+<button class="button" onclick="Teacher.undo()">Undo</button>
+<button class="button" onclick="Teacher.dfs()">DFS</button>
+<button class="button" onclick="Teacher.bfs()">BFS</button>
+
+<div class="graphType">
+    <label>Type:</label>
+    <input type="radio" id="directedRadio" value="directed" name="graphType" checked>
+    <label for="directedRadio">Directed</label>
+    <input type="radio" id="undirectedRadio" value="undirected" name="graphType">
+    <label for="undirectedRadio">Undirected</label>
+</div>
 </body>
 </html>
